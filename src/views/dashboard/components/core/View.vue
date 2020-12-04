@@ -1,7 +1,11 @@
 <template>
   <v-main>
-    <router-view />
-
+    <transition
+      name="fade"
+      mode="out-in"
+    >
+      <router-view />
+    </transition>
     <!-- <dashboard-core-footer /> -->
   </v-main>
 </template>

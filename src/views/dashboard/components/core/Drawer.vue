@@ -55,7 +55,7 @@
       <!-- https://github.com/vuetifyjs/vuetify/pull/8574 -->
       <div />
 
-      <template v-for="(item, i) in items">
+      <template v-for="(item, i) in filterItem">
         <base-item-group
           v-if="item.children"
           :key="`group-${i}`"
@@ -113,9 +113,19 @@
         //   to: 'dashboard/dashboard2',
         // },
         {
+          title: 'Biểu đồ',
+          icon: 'mdi-chart-line',
+          to: '/chart',
+        },
+        {
           title: 'Nhân viên',
           icon: 'mdi-account',
           to: '/user',
+        },
+        {
+          title: 'Import Data',
+          icon: 'mdi-database-arrow-down-outline',
+          to: '/import-data',
         },
         {
           icon: 'mdi-clipboard-text',
@@ -190,6 +200,13 @@
         return {
           avatar: false,
           title: 'Rocket Studio',
+        }
+      },
+      filterItem () {
+        if (this.$store.state.user.user.role !== 'admin') {
+          return this.items.filter(r => r.title !== 'Nhân viên')
+        } else {
+          return this.items
         }
       },
     },

@@ -19,6 +19,9 @@ export default new Vuex.Store({
       state.drawer = payload
     },
   },
+  getters: {
+
+  },
   actions: {
 
   },

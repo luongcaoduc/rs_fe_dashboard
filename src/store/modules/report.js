@@ -11,9 +11,18 @@ const mutations = {
   RETURN_REPORT_MONTH () {},
   RETURN_REPORT_QUARTER () {},
   RETURN_YEAR () {},
+  RETURN_ALL_REPORT () {},
 }
 
 const actions = {
+  async getAllReport ({ commit }, { game }) {
+    try {
+      const { data } = await axios.get(`reports/get-all-report?game=${game}`)
+      commit('RETURN_ALL_REPORT', data)
+    } catch (error) {
+      Promise.resolve(error)
+    }
+  },
   async getReports ({ commit }, { startDate, endDate, game, page, pageSize }) {
     try {
       if (game === 'Tất cả') game = ''
@@ -42,16 +51,17 @@ const actions = {
       const { data } = await axios.get('reports/get-report-week')
       commit('RETURN_REPORT_WEEK', data)
     } catch (error) {
-      return error
+      return Promise.reject(error)
     }
   },
   async getReportsWeekByGame ({ commit }, inputData) {
     try {
       const { game } = inputData
-      const { data } = await axios.get(`reports/get-report-week-by-game?game=${game}`)
+      console.log(game)
+      const { data } = await axios.post('reports/get-report-week-by-game', { game: game })
       commit('RETURN_REPORT_WEEK', data)
     } catch (error) {
-      return error
+      return Promise.reject(error)
     }
   },
   async getReportsMonth ({ commit }) {
@@ -65,7 +75,7 @@ const actions = {
   async getReportsMonthByGame ({ commit }, inputData) {
     try {
       const { game } = inputData
-      const { data } = await axios.get(`reports/get-report-month-by-game?game=${game}`)
+      const { data } = await axios.post('reports/get-report-month-by-game', { game: game })
       commit('RETURN_REPORT_MONTH', data)
     } catch (error) {
       return error
@@ -82,7 +92,7 @@ const actions = {
   async getReportsQuarterByGame ({ commit }, inputData) {
     try {
       const { game } = inputData
-      const { data } = await axios.get(`reports/get-report-quarter-by-game?game=${game}`)
+      const { data } = await axios.post('reports/get-report-quarter-by-game', { game: game })
       commit('RETURN_REPORT_QUARTER', data)
     } catch (error) {
       return error
@@ -102,7 +112,6 @@ const actions = {
       if (game) {
         bodyObject.game = game
       }
-      console.log(startWeek)
       const { data } = await axios.post(`reports/find-report-by-week?startWeek=${startWeek || '0'}&endWeek=${endWeek || '0'}`, bodyObject)
       commit('RETURN_REPORT_WEEK', data)
     } catch (error) {

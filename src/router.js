@@ -1,13 +1,29 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from './store/store'
+
+const originalPush = Router.prototype.push
+Router.prototype.push = function push (location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 Vue.use(Router)
 
-function auth (from, to, next) {
-  if (localStorage.getItem('app_user') && localStorage.getItem('app_token')) {
+async function auth (from, to, next) {
+  store.commit('user/GET_LOCAL_USER_INFO')
+  if (store.state.user.user && store.state.user.token) {
     next()
   } else {
     next('/login')
+  }
+}
+
+async function routeLogin (from, to, next) {
+  store.commit('user/GET_LOCAL_USER_INFO')
+  if (store.state.user.user && store.state.user.token) {
+    next('/')
+  } else {
+    next()
   }
 }
 
@@ -60,8 +76,23 @@ export default new Router({
         },
         {
           path: '/user',
-          name: 'Login',
+          name: 'Nhân viên',
           component: () => import('@/views/user'),
+        },
+        {
+          path: '/chart',
+          name: 'Biểu đồ',
+          component: () => import('@/views/chart'),
+        },
+        {
+          path: '/permission/:userId',
+          name: 'Quyền',
+          component: () => import('@/views/permissions'),
+        },
+        {
+          path: '/import-data',
+          name: 'Import Data',
+          component: () => import('@/views/importData'),
         },
         // {
         //   name: 'Typography',
@@ -86,7 +117,14 @@ export default new Router({
     {
       path: '/login',
       name: 'Login',
+      beforeEnter: routeLogin,
       component: () => import('@/views/login/index'),
+    },
+    {
+      path: '/change-pass',
+      name: 'Change Password',
+      beforeEnter: auth,
+      component: () => import('@/views/changePass/changePass'),
     },
   ],
 })

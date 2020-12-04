@@ -78,13 +78,93 @@
         <v-list-item>
           <v-list-item-title
             style="cursor: pointer"
-            @click="logout"
+            @click="openDialog()"
+          >
+            Đổi mật khẩu
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title
+            style="cursor: pointer"
+            @click="logout()"
           >
             Đăng xuất
           </v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
+    <v-dialog
+      v-model="dialog"
+      max-width="500"
+    >
+      <v-card class="elevation-12">
+        <v-toolbar
+          color="rs_color"
+          dark
+          flat
+        >
+          <v-toolbar-title>Đổi mật khẩu</v-toolbar-title>
+        </v-toolbar>
+        <p
+          v-if="errorStatus"
+          class="text-center red--text"
+        >
+          {{ errorMessage }}
+        </p>
+        <v-card-text>
+          <v-form>
+            <v-text-field
+              v-model="password"
+              label="Mật khẩu"
+              name="login"
+              prepend-icon="mdi-lock"
+              type="password"
+              color="rs_color"
+              :rules="[v => !!v || 'Mật khẩu không được để trống']"
+            />
+
+            <v-text-field
+              v-model="newPassword"
+              label="Mật khẩu mới"
+              name="login"
+              prepend-icon="mdi-lock"
+              type="password"
+              color="rs_color"
+              :rules="[v => !!v || 'Mật khẩu mới không được để trống']"
+            />
+
+            <v-text-field
+              id="password"
+              v-model="confirmNewPassword"
+              label="Xác nhận mật khẩu"
+              name="mật khẩu"
+              prepend-icon="mdi-lock"
+              type="password"
+              color="rs_color"
+              :rules="[v => !!v || 'Xác nhận mật khẩu không được để trống']"
+              @keypress.enter="changePass()"
+            />
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="red"
+            style="float: right"
+            @click="closeDialog()"
+          >
+            Hủy
+          </v-btn>
+          <v-btn
+            color="rs_color"
+            :disabled="!checkField"
+            @click="changePass()"
+          >
+            Tiếp tục
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app-bar>
 </template>
 
@@ -94,6 +174,8 @@
 
   // Utilities
   import { mapState, mapMutations } from 'vuex'
+
+  import swal from '../../../../plugins/sweetalert'
 
   export default {
     name: 'DashboardCoreAppBar',
@@ -139,6 +221,12 @@
         'Another Notification',
         'Another one',
       ],
+      dialog: false,
+      password: '',
+      newPassword: '',
+      confirmNewPassword: '',
+      errorStatus: false,
+      errorMessage: '',
     }),
 
     computed: {
@@ -146,18 +234,49 @@
       username () {
         return JSON.parse(localStorage.getItem('app_user')).username
       },
+      checkField () {
+        return this.password && this.newPassword && this.confirmNewPassword
+      },
     },
 
     methods: {
       ...mapMutations({
         setDrawer: 'SET_DRAWER',
       }),
-      logout () {
+      async logout () {
         try {
           this.$store.dispatch('user/logout')
           this.$router.push({ path: '/login' })
         } catch (error) {
           console.log(error)
+        }
+      },
+      openDialog () {
+        this.dialog = true
+      },
+      closeDialog () {
+        this.dialog = false
+        this.password = ''
+        this.newPassword = ''
+        this.confirmNewPassword = ''
+      },
+      async changePass () {
+        if (this.newPassword !== this.confirmNewPassword) {
+          this.errorStatus = true
+          this.errorMessage = 'Mật khẩu mới và xác nhận không giống chính xác'
+          return
+        }
+        try {
+          await this.$store.dispatch('user/changePass2', { password: this.password, newPassword: this.newPassword })
+          this.closeDialog()
+          swal.success('Đổi mật khẩu thành công')
+        } catch (error) {
+          if (error.response.data.code === 'WRONG_PASS') {
+            this.errorStatus = true
+            this.errorMessage = 'Mật khẩu không chính xác'
+          } else {
+            alert(error)
+          }
         }
       },
     },
