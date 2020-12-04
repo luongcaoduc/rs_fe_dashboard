@@ -57,7 +57,6 @@ const actions = {
   async getReportsWeekByGame ({ commit }, inputData) {
     try {
       const { game } = inputData
-      console.log(game)
       const { data } = await axios.post('reports/get-report-week-by-game', { game: game })
       commit('RETURN_REPORT_WEEK', data)
     } catch (error) {
