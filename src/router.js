@@ -28,8 +28,7 @@ async function routeLogin (from, to, next) {
 }
 
 export default new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
+  mode: 'hash',
   routes: [
     {
       path: '/',
